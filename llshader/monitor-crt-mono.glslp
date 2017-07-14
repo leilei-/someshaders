@@ -1,4 +1,4 @@
-shaders = "13"
+shaders = "5"
 
 shader0 = "../crt/shaders/crt-easymode-halation/linearize.glsl"
 filter_linear0 = "false"
