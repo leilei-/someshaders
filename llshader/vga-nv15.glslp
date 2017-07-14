@@ -1,0 +1,8 @@
+shaders = "1"
+shader0 = "shaders/nvgasignal.glsl"
+filter_linear0 = "true"
+srgb_framebuffer0 = "true"
+scale_type_x0 = "source"
+scale_x0 = "1.000000"
+scale_type_y0 = "source"
+scale_y0 = "1.000000"

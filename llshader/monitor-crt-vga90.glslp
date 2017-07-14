@@ -1,0 +1,84 @@
+shaders = "8"
+
+shader0 = "shaders/offsetrgb.glsl"
+filter_linear0 = "false"
+srgb_framebuffer0 = "true"
+scale_type_x0 = "source"
+scale_x0 = "1.000000"
+scale_type_y0 = "source"
+scale_y0 = "1.000000"
+
+shader1 = "shaders/gausshackv.glsl"
+filter_linear1 = "false"
+srgb_framebuffer1 = "true"
+scale_type_x1 = "source"
+scale_x1 = "1.000000"
+scale_type_y1 = "source"
+scale_y1 = "1.000000"
+
+shader2 = "shaders/gausshackh.glsl"
+filter_linear2 = "false"
+srgb_framebuffer2 = "true"
+scale_type_x2 = "source"
+scale_x2 = "1.000000"
+scale_type_y2 = "source"
+scale_y2 = "1.000000"
+
+shader3 = "../crt/shaders/crt-easymode-halation/linearize.glsl"
+filter_linear3 = "false"
+srgb_framebuffer3 = "true"
+scale_type_x3 = "source"
+scale_x3 = "1.000000"
+scale_type_y3 = "source"
+scale_y3 = "1.000000"
+
+shader4 = "../crt/shaders/crt-easymode-halation/blur_horiz.glsl"
+filter_linear4 = "false"
+srgb_framebuffer4 = "true"
+scale_type_x4 = "source"
+scale_x4 = "1.000000"
+scale_type_y4 = "source"
+scale_y4 = "1.000000"
+
+shader5 = "../crt/shaders/crt-easymode-halation/blur_vert.glsl"
+filter_linear5 = "false"
+srgb_framebuffer5 = "true"
+scale_type_x5 = "source"
+scale_x5 = "1.000000"
+scale_type_y5 = "source"
+scale_y5 = "1.000000"
+
+shader6 = "../crt/shaders/crt-easymode-halation/threshold.glsl"
+filter_linear6 = "false"
+srgb_framebuffer6 = "true"
+scale_type_x6 = "source"
+scale_x6 = "1.000000"
+scale_type_y6 = "source"
+scale_y6 = "1.000000"
+
+shader7 = "../crt/shaders/crt-easymode-halation/crt-easymode-halation.glsl"
+filter_linear7 = "true"
+
+parameters = "GAMMA_INPUT;RETRO_PIXEL_SIZE;GAMMA_OUTPUT;SHARPNESS_H;SHARPNESS_V;MASK_TYPE;MASK_STRENGTH_MIN;MASK_STRENGTH_MAX;MASK_SIZE;SCANLINE_STRENGTH_MIN;SCANLINE_STRENGTH_MAX;SCANLINE_BEAM_MIN;SCANLINE_BEAM_MAX;GEOM_CURVATURE;GEOM_WARP;GEOM_CORNER_SIZE;GEOM_CORNER_SMOOTH;INTERLACING_TOGGLE;HALATION;DIFFUSION;BRIGHTNESS"
+GAMMA_INPUT = 2.870000
+RETRO_PIXEL_SIZE = 0.000000
+GAMMA_OUTPUT = 1.000000
+SHARPNESS_H = 0.000000
+SHARPNESS_V = 0.000000
+MASK_TYPE = 6.000000
+MASK_STRENGTH_MIN = 0.130000
+MASK_STRENGTH_MAX = 0.240000
+MASK_SIZE = 1.000000
+SCANLINE_STRENGTH_MIN = 0.050000
+SCANLINE_STRENGTH_MAX = 0.000000
+SCANLINE_BEAM_MIN = 1.000000
+SCANLINE_BEAM_MAX = 1.050000
+GEOM_CURVATURE = 0.020000
+GEOM_WARP = 0.020000
+GEOM_CORNER_SIZE = 0.020000
+GEOM_CORNER_SMOOTH = 500.000000
+INTERLACING_TOGGLE = 0.000000
+HALATION = 0.190000
+DIFFUSION = 0.100000
+BRIGHTNESS = 1.250000
+
