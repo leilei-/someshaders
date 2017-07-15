@@ -10,7 +10,6 @@
 // leilei - try to boost blue
 //		imitating the look of a certain rgbi monitor from 1983
 
-
 #define HW 1.00
 
 #if defined(VERTEX)
@@ -106,6 +105,7 @@ void main()
 	pollute.g = 0.8;
 	pollute.b = 1.0;
 
+
 	sat = (color.r + color.g + color.b) / 3;
 
 	float blbst;
@@ -128,8 +128,8 @@ void main()
 
 	// Brightify
 
-	//colorb.rg -= (colorb.b * 0.01);
-	colorb.rgb += (colorb.b * 0.24);
+	colorb.rg -= (colorb.b * 0.01);
+	colorb.rgb += (colorb.b * 0.03);
 	colorb.rgb *= 1;
 
 
