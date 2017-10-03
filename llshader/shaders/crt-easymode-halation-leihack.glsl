@@ -235,7 +235,7 @@ void main()
     float timer = vec2(FrameCount, FrameCount).x;
 
 	// leilei hack! try to reduce scanline size to adapt moire off for resolutions.
-	float adjst = ((InputSize.y * 1.8) / OutputSize.y); // 1.8 looks nice with 1080p
+	float adjst = ((InputSize.y * 2.72) / OutputSize.y); // 1.8 looks nice with 1080p
 	float refrate;
 
 	if (InputSize.y == 350) // 640x350, 320x350 or 360x350
