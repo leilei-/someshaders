@@ -1,5 +1,5 @@
 /*
-	scale down for simulating high native lcd resolutions
+	Early laptop screens
     Authors: leilei
  
     This program is free software; you can redistribute it and/or modify it
@@ -8,6 +8,8 @@
     any later version.
 */
 
+
+// leilei - quick hacky greyscale for laptops
 
 #define HW 1.00
 
@@ -28,8 +30,6 @@
 #else
 #define COMPAT_PRECISION
 #endif
-
-
 
 COMPAT_ATTRIBUTE vec4 VertexCoord;
 COMPAT_ATTRIBUTE vec4 COLOR;
@@ -90,54 +90,82 @@ COMPAT_VARYING vec4 TEX0;
 #define Source Texture
 #define vTexCoord TEX0.xy
 #define texture(c, d) COMPAT_TEXTURE(c, d)
-
-#pragma parameter NATIVE_WIDTH "Native Width" 640.0 1.0 1280.0 1.0
-#pragma parameter NATIVE_HEIGHT "Native Height" 480.0 1.0 1024.0 1.0
-
-uniform COMPAT_PRECISION float NATIVE_WIDTH;
-uniform COMPAT_PRECISION float NATIVE_HEIGHT;
-
-#define FixedSize vec2(NATIVE_WIDTH, NATIVE_HEIGHT) // destination monitor size?
-#define SourceSize vec4(InputSize, 1.0 / InputSize) 
+#define FixedSize vec2(640, 480)
+#define SourceSize vec4(FixedSize, 1.0 / FixedSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
-
 
 
 void main()
 {
-	int f;
-	vec3 pixelblend;
-
 	vec2 texcoord  = vTexCoord;
-	vec2 therecoord  = vTexCoord;
-	vec2 difsize;
-	vec2 difsiz2;
-
-	difsize.x = FixedSize.x / InputSize.x;
-	difsize.y = FixedSize.y / InputSize.y;
-
-	difsiz2.x = FixedSize.x / (InputSize.x * 0.5);
-	difsiz2.y = FixedSize.y / (InputSize.y * 0.5);
-
-	// Size it down
-	//therecoord.x = (therecoord.x * difsize.x);
-	//therecoord.y = (therecoord.y * difsize.y);
-
-	// Align to center
-	if (difsize.x > 1.0){
-		vec2 _shift;
-		_shift = (5.00000000E-01*InputSize)/TextureSize;	// snagged from image_Adjustment
-	therecoord.xy = ((therecoord.xy - _shift) * difsize.xy) + _shift;
-	}
-	else
-	{
-	//TODO: Top left align? NOT bottom left
-	therecoord.x = (therecoord.x * difsize.x);
-	therecoord.y = (therecoord.y * difsize.y);
-	}
-
 	vec4 color = texture(Source, texcoord);
-        color = texture(Source, therecoord);
-   	FragColor = vec4(color);
+	float intensity = ((color.r * 0.30) + (color.g*0.59) + (color.b*0.11));
+
+	vec4 back;
+	vec4 backd;
+	vec4 front;
+	vec4 mid;
+
+
+// Backlight / "black"
+	back.r = 0.12;
+	back.g = 0.14;
+	back.b = 0.18;
+
+	backd.r = 0.39;
+	backd.g = 0.46;
+	backd.b = 0.52;
+
+	mid.r = 0.59;
+	mid.g = 0.68;
+	mid.b = 0.73;
+
+	front.r = 0.70;
+	front.g = 0.79;
+	front.b = 0.82;
+
+// New algorithm
+
+	float ratio = 1 - ( (intensity*255) / 255 );
+
+	float inv1 = ratio * 3.0;
+	float inv2 = ratio * 3.0 - 1;
+	float inv3 = ratio * 3.0 - 2;
+	float inv4 = ratio * 3.0 - 3;
+
+	if (inv1 > 1.0f) inv1 = 1.0f;
+	if (inv2 > 1.0f) inv2 = 1.0f;
+	if (inv3 > 1.0f) inv3 = 1.0f;
+	if (inv4 > 1.0f) inv4 = 1.0f;
+
+	if (ratio < 0.33f){
+			color.r = (mid.r * inv1) + (front.r * (1 - inv1));
+			color.g = (mid.g * inv1) + (front.g * (1 - inv1));
+			color.b = (mid.b * inv1) + (front.b * (1 - inv1));
+		}
+
+	else if (ratio < 0.66f){
+			color.r = (backd.r * inv2) + (mid.r * (1 - inv2));
+			color.g = (backd.g * inv2) + (mid.g * (1 - inv2));
+			color.b = (backd.b * inv2) + (mid.b * (1 - inv2));
+		}
+	else {
+			color.r = (back.r * inv3) + (backd.r * (1 - inv3));
+			color.g = (back.g * inv3) + (backd.g * (1 - inv3));
+			color.b = (back.b * inv3) + (backd.b * (1 - inv3));
+		}
+
+// Shadows
+	int f;
+	float pxshadow;
+	for(f=1;f<4;f++)
+	{
+	vec3 pixel1 = texture(Source, texcoord + vec2((-0.002f / 4) * f, (0.004f / 4) * f)).rgb;
+	float intenshadow = ((pixel1.r * 0.30) + (pixel1.g*0.59) + (pixel1.b*0.11)) / 48;
+	pxshadow += intenshadow;
+
+	}
+
+   	FragColor = vec4(color) - pxshadow;
 } 
 #endif
