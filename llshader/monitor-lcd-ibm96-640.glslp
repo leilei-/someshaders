@@ -1,0 +1,36 @@
+shaders = "3"
+shader0 = "shaders/lcdres.glsl"
+scale_type_x0 = "absolute"
+scale_x0 = "640"
+scale_type_y0 = "absolute"
+scale_y0 = "480"
+
+shader1 = "../handheld/shaders/color/psp-color.glsl"
+filter_linear1 = "false"
+scale_type1 = "source"
+scale1 = "1.0"
+
+shader2 = "../handheld/shaders/lcd-cgwg/lcd-grid-v2.glsl"
+filter_linear2 = "false"
+scale_type2 = "viewport"
+scale2 = "1.0"
+
+parameters = "NATIVE_WIDTH;NATIVE_HEIGHT;target_gamma;RSUBPIX_R;RSUBPIX_G;RSUBPIX_B;GSUBPIX_R;GSUBPIX_G;GSUBPIX_B;BSUBPIX_R;BSUBPIX_G;BSUBPIX_B;gain;gamma;outgamma;blacklevel;ambient;BGR"
+target_gamma = 2.000000
+RSUBPIX_R = 1.000000
+RSUBPIX_G = 0.000000
+RSUBPIX_B = 0.000000
+GSUBPIX_R = 0.000000
+GSUBPIX_G = 1.000000
+GSUBPIX_B = 0.000000
+BSUBPIX_R = 0.000000
+BSUBPIX_G = 0.000000
+BSUBPIX_B = 1.000000
+gain = 1.000000
+gamma = 2.900000
+outgamma = 1.700000
+blacklevel = 0.410000
+ambient = 0.000000
+BGR = 0.000000
+NATIVE_WIDTH 	= 640
+NATIVE_HEIGHT 	= 480

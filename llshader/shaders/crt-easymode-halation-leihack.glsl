@@ -41,10 +41,12 @@ precision mediump float;
 #pragma parameter DIFFUSION "Diffusion" 0.0 0.0 1.0 0.01
 #pragma parameter BRIGHTNESS "Brightness" 1.0 0.0 2.0 0.05
 #pragma parameter MONITORMEASURES "Enable 'real' size" 0 0.0 1.0 1.0
+#pragma parameter ROTATEMASK "Rotate Shadow Mask" 0 0.0 1.0 1.0
 #pragma parameter SCANBIAS "Scanline/Res Bias" 2.72 0.1 5.0 0.01
 #pragma parameter VIRTUAL_INCHES "Virtual Height (inch)" 9 0.1 15.0 0.01
 #pragma parameter TARGET_INCHES "Target Height (inch)" 12.5 0.1 30.0 0.01
 #pragma parameter TARGET_NATIVERES "Target Native Height (px)" 1080 1 8000 1
+#pragma parameter MICROJITTER_INTENSITY "Microjitter Intensity" 0.0 0.0 1.0 0.01
 #ifdef PARAMETER_UNIFORM
 // All parameter floats need to have COMPAT_PRECISION in front of them
 uniform COMPAT_PRECISION float GAMMA_OUTPUT;
@@ -67,10 +69,12 @@ uniform COMPAT_PRECISION float HALATION;
 uniform COMPAT_PRECISION float DIFFUSION;
 uniform COMPAT_PRECISION float BRIGHTNESS;
 uniform COMPAT_PRECISION float MONITORMEASURES;
+uniform COMPAT_PRECISION float ROTATEMASK;
 uniform COMPAT_PRECISION float SCANBIAS;		// leilei - scanline/res bias (to avoid moire)
 uniform COMPAT_PRECISION float VIRTUAL_INCHES;		// leilei - emulated monitor's viewable size (in vertical inches)
 uniform COMPAT_PRECISION float TARGET_INCHES;		// leilei - your monitor's viewable size (in vertical inches)
 uniform COMPAT_PRECISION float TARGET_NATIVERES;	// leilei - your monitor's native vertical resolution
+uniform COMPAT_PRECISION float MICROJITTER_INTENSITY;	// leilei - microjitter (anti-moire attempt)
 #else
 #define GAMMA_OUTPUT 2.2
 #define SHARPNESS_H 0.6
@@ -92,10 +96,14 @@ uniform COMPAT_PRECISION float TARGET_NATIVERES;	// leilei - your monitor's nati
 #define DIFFUSION 0.0
 #define BRIGHTNESS 1.0
 #define MONITORMEASURES 0
+#define ROTATEMASK 0
 #define SCANBIAS 2.72
 #define VIRTUAL_INCHES 9
 #define TARGET_INCHES 12.5
 #define TARGET_NATIVERES 1080
+#define MICROJITTER_WIDTH 2048
+#define MICROJITTER_HEIGHT 768
+#define MICROJITTER_INTENSITY 1.0
 #endif
 
 #if __VERSION__ >= 130
@@ -191,6 +199,7 @@ COMPAT_VARYING vec4 TEX0;
 uniform mat4 MVPMatrix;
 uniform int FrameDirection;
 uniform int FrameCount;
+uniform int time;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
@@ -227,6 +236,8 @@ precision mediump float;
 
 uniform int FrameDirection;
 uniform int FrameCount;
+
+uniform int localrefreshrate;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
@@ -251,6 +262,18 @@ void main()
     float resdif;
     vec2 asp = vec2(1, 1);
 
+	// leilei - setup microjitter
+	vec2 jit;
+	float fc = mod(FrameCount, 4.0);
+	//fc = FrameDirection*6666;
+	jit.x = sin(fc*1.1) 	/ 2048;
+	jit.y = sin(fc);
+	jit.x /= OutputSize.x;
+	jit.y /= OutputSize.y;
+	jit.xy *= MICROJITTER_INTENSITY;
+
+	midpoint.y *= (jit.y * 2);
+
 	// leilei - try to maintain 4:3 no matter what (for other shaders like overlay to come after filling the screen)
 	float aspx43 = OutputSize.y * 1.333333333333333;
 	float aspr = (OutputSize.x / OutputSize.y);
@@ -266,19 +289,28 @@ void main()
 	inchdif = 1.0; // don't resize
 
 
-    float scan_offset = 0.0;
+    float scan_offset = 0.0 + (jit.y*2);
     float timer = vec2(FrameCount, FrameCount).x;
 
 	// leilei hack! try to reduce scanline size to adapt moire off for resolutions.
 	float adjst = ((InputSize.y * SCANBIAS) / OutputSize.y ) + (inchdif * 0.42); 
 	float refrate;
+	if (localrefreshrate)
+	{
+		// Determine from framecount and ticks as fast as we can
+		refrate = localrefreshrate;
+	}
 
+	else
+	{
 	if (InputSize.y == 350) // 640x350, 320x350 or 360x350
 		refrate = 70;
 	else if (InputSize.y == 400) // 640x400, 720x400 or 320x200
 		refrate = 70;
 	else
 		refrate = 60; // TODO: Get actual emulated refresh rate
+	}
+
 
 	refrate = 60 / refrate;
 
@@ -303,27 +335,29 @@ void main()
 	}
 	
 
-    //vec2 co = (vTexCoord / asp) * tex_size * (1.0 / InputSize.xy);
 	vec2 co = (vTexCoord) * tex_size * (1.0 / InputSize.xy);
 
 
-    vec2 xy = curve_coordinate(co, GEOM_WARP);
+    vec2 xy = curve_coordinate(co, GEOM_WARP) + (jit);
     float corner_weight = get_corner_weight(curve_coordinate(co, GEOM_CURVATURE), vec2(GEOM_CORNER_SIZE), GEOM_CORNER_SMOOTH);
 
-    xy *= InputSize.xy / tex_size;
+
+    xy *= (InputSize.xy) / tex_size;
+
+
 
 	// leilei - zoom, this math is blatantly stolen from hunterk's image_Adjustment
 	{
 		vec2 _shift;
 		_shift = (5.00000000E-01*InputSize)/TextureSize;
 		xy = ((xy.xy - _shift) * inchdif) + _shift;
-	//	tex_size.xy = ((tex_size.xy - _shift) * inchdif) + _shift;
 	}
 
     vec2 dx = vec2(1.0 / tex_size.x, 0.0);
     vec2 dy = vec2(0.0, 1.0 / tex_size.y);
     vec2 pix_co = xy * (tex_size) - midpoint;
     vec2 tex_co = (floor(pix_co) + midpoint) / (tex_size);
+
     vec2 dist = fract(pix_co);
     float curve_x, curve_y;
     vec3 col, col2, diff;
@@ -382,9 +416,18 @@ void main()
     mask_stagger = mask_config.w;
     mask_dither = fract(mask_config.x) * 10.0;
 
+
+
     vec2 mod_fac = floor(vTexCoord * outsize.xy * SourceSize.xy / (InputSize.xy * vec2(MASK_SIZE, mask_dot_height * MASK_SIZE))) * 1.0001;
+
+    if (ROTATEMASK){
+	float fac = mod_fac.x;
+	mod_fac.x = mod_fac.y;
+	mod_fac.y = fac;
+	}
+
     int dot_no = int(mod((mod_fac.x + mod(mod_fac.y, 2.0) * mask_stagger) / mask_dot_width, mask_colors));
-    float dither = mod(mod_fac.y + mod(floor(mod_fac.x / mask_colors), 2.0), 2.0);
+    float dither = mod(mod_fac.x + mod(floor(mod_fac.y / mask_colors), 2.0), 2.0);
 
     float mask_strength = mix(MASK_STRENGTH_MAX, MASK_STRENGTH_MIN, rgb_max);
     float mask_dark, mask_bright, mask_mul;
